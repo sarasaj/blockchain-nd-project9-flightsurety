@@ -21,7 +21,7 @@ contract FlightSuretyData {
     mapping(address => Airline) airlines;
     mapping(address => uint256) authorizedContracts;
     uint256 public noOfAirlines = 0;
-    unit constant M;
+    unit constant M= 2;
     address[] multiCalls = new address[](0);
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
