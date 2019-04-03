@@ -21,6 +21,8 @@ contract FlightSuretyData {
     mapping(address => Airline) airlines;
     mapping(address => uint256) authorizedContracts;
     uint256 public noOfAirlines = 0;
+    unit constant M;
+    address[] multiCalls = new address[](0);
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -97,15 +99,34 @@ contract FlightSuretyData {
     *
     * When operational mode is disabled, all write transactions except for this one will fail
     */
+
     function setOperatingStatus
                             (
                                 bool mode
                             )
                             external
                             requireContractOwner
+                            isCallerAuthorized
     {
-        operational = mode;
+        require(mode != operational, "New mode must be different from existing mode");
+        // require(userProfiles[msg.sender].isAdmin, "Caller is not an admin");
+
+        bool isDuplicate = false;
+        for(uint c=0; c<multiCalls.length; c++) {
+            if (multiCalls[c] == msg.sender) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        require(!isDuplicate, "Caller has already called this function.");
+
+        multiCalls.push(msg.sender);
+        if (multiCalls.length >= M) {
+            operational = mode;
+            multiCalls = new address[](0);
+        }
     }
+
     function getNoOfAirlines() external returns(uint256 ) {
         return noOfAirlines;
     }
