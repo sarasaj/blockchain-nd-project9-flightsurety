@@ -21,7 +21,7 @@ contract FlightSuretyData {
     mapping(address => Airline) airlines;
     mapping(address => uint256) authorizedContracts;
     uint256 public noOfAirlines = 0;
-    unit constant M= 2;
+    uint M= 2;
     address[] multiCalls = new address[](0);
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -36,10 +36,10 @@ contract FlightSuretyData {
     {
         contractOwner = msg.sender;
         //registering the 1st air line
-        Airline storage firstAirline = airline[msg.sender];
+        Airline storage firstAirline = airlines[msg.sender];
         firstAirline.airlineAddress = msg.sender;
-        airlineAddress.name = "1st airline";
-        airlineAddress.registerd = true;
+        firstAirline.name = "1st airline";
+        firstAirline.registerd = true;
         noOfAirlines++;
 
     }
@@ -106,10 +106,9 @@ contract FlightSuretyData {
                             )
                             external
                             requireContractOwner
-                            isCallerAuthorized
+                            
     {
         require(mode != operational, "New mode must be different from existing mode");
-        // require(userProfiles[msg.sender].isAdmin, "Caller is not an admin");
 
         bool isDuplicate = false;
         for(uint c=0; c<multiCalls.length; c++) {
@@ -119,7 +118,7 @@ contract FlightSuretyData {
             }
         }
         require(!isDuplicate, "Caller has already called this function.");
-
+        M = noOfAirlines/2; //%05% for multiparty consensus
         multiCalls.push(msg.sender);
         if (multiCalls.length >= M) {
             operational = mode;
@@ -158,10 +157,10 @@ contract FlightSuretyData {
                             requireIsOperational
     {
 
-        Airline storage newAirline = airline[newAirlineAddress];
+        Airline storage newAirline = airlines[newAirlineAddress];
         newAirline.airlineAddress = newAirlineAddress;
-        airlineAddress.name = name;
-        airlineAddress.registerd = true;
+        newAirline.name = name;
+        newAirline.registerd = true;
 
         noOfAirlines++;
 

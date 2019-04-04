@@ -33,6 +33,8 @@ contract FlightSuretyApp {
     }
     mapping(bytes32 => Flight) private flights;
     FlightSuretyData flightSuretyData;
+    uint noOfRequiredCalls; //M the 50% of N the number of airline for multiparty consensus
+    address[] multiCalls = new address[](0);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -122,6 +124,23 @@ contract FlightSuretyApp {
 
     	}else { //multi party consensus
 
+	        bool isDuplicate = false;
+	        for(uint c=0; c<multiCalls.length; c++) {
+	            if (multiCalls[c] == msg.sender) {
+	                isDuplicate = true;
+	                break;
+	            }
+	        }
+	        require(!isDuplicate, "Caller has already called this function.");
+
+	        noOfRequiredCalls = flightSuretyData.noOfAirlines/2; //50% for multiparty consensus
+
+	        multiCalls.push(msg.sender);
+	        if (multiCalls.length >= noOfRequiredCalls) {
+	            flightSuretyData.registerAirline(airlineToBeRegistered,nameOfAirline);
+    			success = true;
+	            multiCalls = new address[](0);
+	        }
     	}
         return (success, 0);
     }
