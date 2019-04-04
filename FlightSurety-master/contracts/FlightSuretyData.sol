@@ -16,6 +16,7 @@ contract FlightSuretyData {
         string name;
         bool registerd;
         bool hasFunded;
+        uint fundingAmount;
 
     }
     mapping(address => Airline) airlines;
@@ -23,11 +24,12 @@ contract FlightSuretyData {
     uint256 public noOfAirlines = 0;
     uint M= 2;
     address[] multiCalls = new address[](0);
+    unit fundingValue = 10 ether;
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
     event AirlinrRegistred(address airlineAddress);
-
+    event Funded(address airlineAddress);
     /**
     * @dev Constructor
     *      The deploying account becomes contractOwner
@@ -74,6 +76,16 @@ contract FlightSuretyData {
     modifier isCallerAuthorized()
     {
         require(authorizedContracts[msg.sender] == 1, "Caller is not authorized");
+        _;
+    }
+    modifier isAirlineRegistred()
+    {
+        require(isAirlineRegistred, "airline is not registerd");
+        _;
+    }
+    modifier isFundingEnough()
+    {
+        require(msg.value >= fundingValue , "airline must fund at least 10 ether");
         _;
     }
     /********************************************************************************************/
@@ -213,10 +225,19 @@ contract FlightSuretyData {
     */
     function fund
                             (
+                                address airline
                             )
-                            public
+                            external
                             payable
+                            requireIsOperational
+                            isAirlineRegistred
+                            isFundingEnough
+
     {
+        airlines[airline].hasFunded = true;
+        airlines[airline].fundingAmount = msg.value;
+
+        emit Funded(airline);
     }
 
     function getFlightKey

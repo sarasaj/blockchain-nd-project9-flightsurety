@@ -133,7 +133,7 @@ contract FlightSuretyApp {
 	        }
 	        require(!isDuplicate, "Caller has already called this function.");
 
-	        noOfRequiredCalls = flightSuretyData.noOfAirlines/2; //50% for multiparty consensus
+	        noOfRequiredCalls = flightSuretyData.getNoOfAirlines()/2; //50% for multiparty consensus
 
 	        multiCalls.push(msg.sender);
 	        if (multiCalls.length >= noOfRequiredCalls) {
@@ -152,6 +152,13 @@ contract FlightSuretyApp {
     */
     function registerFlight
                                 (
+                                	string id,
+                                	string from,
+                                	string to,
+                                	address airlineAddress,
+                                	uint8 statusCode,
+                                	uint256 timeStamp
+
                                 )
                                 external
                                 pure
