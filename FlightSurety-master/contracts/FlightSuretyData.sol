@@ -21,6 +21,8 @@ contract FlightSuretyData {
     }
     mapping(address => Airline) airlines;
     mapping(address => uint256) authorizedContracts;
+    mapping(address => uint256) private PassengersFunds;
+
     uint256 public noOfAirlines = 0;
     uint M= 2;
     address[] multiCalls = new address[](0);
@@ -30,6 +32,7 @@ contract FlightSuretyData {
     /********************************************************************************************/
     event AirlinrRegistred(address airlineAddress);
     event Funded(address airlineAddress);
+    event fundsWithdrawn(address passenger, amount);
     /**
     * @dev Constructor
     *      The deploying account becomes contractOwner
@@ -118,6 +121,7 @@ contract FlightSuretyData {
                             )
                             external
                             requireContractOwner
+                            isCallerAuthorized
                             
     {
         require(mode != operational, "New mode must be different from existing mode");
@@ -160,6 +164,7 @@ contract FlightSuretyData {
     *      Can only be called from FlightSuretyApp contract
     *
     */
+
     function registerAirline(
                             address newAirlineAddress,
                             string name
@@ -238,6 +243,23 @@ contract FlightSuretyData {
         airlines[airline].fundingAmount = msg.value;
 
         emit Funded(airline);
+
+    }
+
+    //passengers can withdraw their money from passengersFunds
+
+    function safeWithdraw(uint256 amount){
+        //checks
+        require(msg.sender == tx.origin, "contracts not allowed");
+        require(passengersFunds[msg.sender]>= amount, "insuffeint funds");
+        //effects 
+        uint256 amount = passengersFunds[msg.sender];
+        passengersFunds[msg.sender] = passengersFunds[msg.sender].sub(amount);
+        //interaction
+        msg.sender.transfer(amount);
+
+        emit PassengersFunds(msg.sender , amount)
+
     }
 
     function getFlightKey

@@ -157,7 +157,8 @@ contract FlightSuretyApp {
                                 	string to,
                                 	address airlineAddress,
                                 	uint8 statusCode,
-                                	uint256 timeStamp
+                                	uint256 ,
+                                	unit insuracePrice
 
                                 )
                                 external
