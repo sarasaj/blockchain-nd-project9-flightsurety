@@ -26,8 +26,9 @@ contract FlightSuretyData {
     uint256 public noOfAirlines = 0;
     uint M= 2;
     address[] multiCalls = new address[](0);
-    unit fundingValue = 10 ether;
+    uint fundingValue = 10 ether;
     uint256 private enabled = block.timestamp;
+    uint256 private counter = 1;
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -97,6 +98,13 @@ contract FlightSuretyData {
         require(block.timestamp >= enabled , "rate limiting in effects");
         enabled = enabled.add(time);
         _;
+    }
+    modifier entracyGuard(uint time)
+    {
+        counter = counter.add(1);
+        uint256 guard = counter;
+        _;
+        require(guard == counter ,"that is not allowed")
     }
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -244,6 +252,7 @@ contract FlightSuretyData {
                             requireIsOperational
                             isAirlineRegistred
                             isFundingEnough
+                            entracyGuard
 
     {
         airlines[airline].hasFunded = true;
@@ -255,7 +264,7 @@ contract FlightSuretyData {
 
     //passengers can withdraw their money from passengersFunds
 
-    function safeWithdraw(uint256 amount)rateLimit(uint time){
+    function safeWithdraw(uint256 amount) rateLimit(5 minutes){
         //checks
         require(msg.sender == tx.origin, "contracts not allowed");
         require(passengersFunds[msg.sender]>= amount, "insuffeint funds");
