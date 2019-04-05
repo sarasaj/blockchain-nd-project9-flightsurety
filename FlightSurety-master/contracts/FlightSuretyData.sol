@@ -27,6 +27,7 @@ contract FlightSuretyData {
     uint M= 2;
     address[] multiCalls = new address[](0);
     unit fundingValue = 10 ether;
+    uint256 private enabled = block.timestamp;
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -89,6 +90,12 @@ contract FlightSuretyData {
     modifier isFundingEnough()
     {
         require(msg.value >= fundingValue , "airline must fund at least 10 ether");
+        _;
+    }
+    modifier rateLimit(uint time)
+    {
+        require(block.timestamp >= enabled , "rate limiting in effects");
+        enabled = enabled.add(time);
         _;
     }
     /********************************************************************************************/
