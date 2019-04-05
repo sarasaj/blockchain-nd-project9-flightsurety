@@ -255,7 +255,7 @@ contract FlightSuretyData {
 
     //passengers can withdraw their money from passengersFunds
 
-    function safeWithdraw(uint256 amount){
+    function safeWithdraw(uint256 amount)rateLimit(uint time){
         //checks
         require(msg.sender == tx.origin, "contracts not allowed");
         require(passengersFunds[msg.sender]>= amount, "insuffeint funds");
