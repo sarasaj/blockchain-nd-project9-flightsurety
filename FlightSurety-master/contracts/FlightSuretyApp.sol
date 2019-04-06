@@ -26,10 +26,13 @@ contract FlightSuretyApp {
     address private contractOwner;          // Account used to deploy contract
 
     struct Flight {
+    	string name,
         bool isRegistered;
         uint8 statusCode;
         uint256 updatedTimestamp;
         address airline;
+        string from,
+        string to,
     }
     mapping(bytes32 => Flight) private flights;
     FlightSuretyData flightSuretyData;
@@ -64,6 +67,12 @@ contract FlightSuretyApp {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
     }
+    modifier airlineHasFunded()
+    {
+        require(flightSuretyData.hasFunded(msg.sender), "airline has not funded any ethers yet");
+        _;
+    }
+
 
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -83,6 +92,8 @@ contract FlightSuretyApp {
         flightSuretyData = FlightSuretyData(dataContract);
     }
 
+    event FlightRegistered(bytes32 flightkey);
+    
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -152,18 +163,32 @@ contract FlightSuretyApp {
     */
     function registerFlight
                                 (
-                                	string id,
+                                	string name,
                                 	string from,
                                 	string to,
                                 	address airlineAddress,
                                 	uint8 statusCode,
-                                	uint256 ,
-                                	unit insuracePrice
+                                	uint256 timestamp,
 
                                 )
                                 external
                                 pure
+                                airlineHasFunded
     {
+    	Flight newFlight = Flight(
+    		name,
+    		true,
+			statusCode,
+			timestamp,
+			airlineAddress,
+			from,
+			to
+    		);
+
+    	bytes32 flightkey = getFlightKey(airlineAddress,name,timestamp);
+    	flights[flightkey] = newFlight;
+
+    	emit FlightRegistered(flightkey);
 
     }
 

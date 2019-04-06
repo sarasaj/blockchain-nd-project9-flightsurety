@@ -170,6 +170,9 @@ contract FlightSuretyData {
     function deAuthorizedContract(address dataContract) external requireContractOwner {
       delete authorizedContracts[dataContract];
     }
+    function hasFunded(address airline) external  returns(bool){
+      return airlines[airline].hasFunded;
+    }
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -252,7 +255,7 @@ contract FlightSuretyData {
                             requireIsOperational
                             isAirlineRegistred
                             isFundingEnough
-                            entracyGuard
+                            entracyGuard 
 
     {
         airlines[airline].hasFunded = true;
