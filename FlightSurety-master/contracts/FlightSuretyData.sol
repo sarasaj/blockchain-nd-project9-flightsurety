@@ -19,9 +19,31 @@ contract FlightSuretyData {
         uint fundingAmount;
 
     }
+    
     mapping(address => Airline) airlines;
     mapping(address => uint256) authorizedContracts;
-    mapping(address => uint256) private PassengersFunds;
+    
+    
+    struct passenger {
+        uint fundingAmount;
+        string name;
+        uint number;
+        unit wallet; //if flight is delayed funds will be stored here
+    }
+    struct Flight {
+        string name,
+        bool isRegistered;
+        uint8 statusCode;
+        uint256 updatedTimestamp;
+        address airline;
+        string from,
+        string to,
+        mapping(adress => Passenger) public passengers; //passengers and the amount they paid
+        address[] PassengersFunds = new address[](0);
+        //mapping(address => uint256) private PassengersFunds; //funds for passengers to withdraw
+    }
+    mapping(bytes32 => Flight) public flights;
+    
 
     uint256 public noOfAirlines = 0;
     uint M= 2;
@@ -34,7 +56,9 @@ contract FlightSuretyData {
     /********************************************************************************************/
     event AirlinrRegistred(address airlineAddress);
     event Funded(address airlineAddress);
+    event Credited(flightkey);
     event fundsWithdrawn(address passenger, amount);
+
     /**
     * @dev Constructor
     *      The deploying account becomes contractOwner
@@ -106,6 +130,11 @@ contract FlightSuretyData {
         _;
         require(guard == counter ,"that is not allowed")
     }
+    modifier flightRegistered(flightkey)
+    {
+        require(flights[flightkey].isRegistered, "flight is not registered");
+        _;
+    }
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -173,6 +202,7 @@ contract FlightSuretyData {
     function hasFunded(address airline) external  returns(bool){
       return airlines[airline].hasFunded;
     }
+    // function getFlight(bytes32 flightkey) returns()
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -210,11 +240,22 @@ contract FlightSuretyData {
     */
     function buy
                             (
+                                bytes32 flightkey,
+                                uint amountPaid,
+                                address buyer,
+                                string name
                             )
                             external
                             payable
+                            requireIsOperational
+                            flightRegistered(flightkey)
     {
-
+        require(amountPaid<=0 ether, "you need to pay more than 0 ether or less than 1 ether");
+        require(amountPaid>1 ether, "you can pay up to 1 ether only");
+        uint count = flights[flightkey].passengersFunds.length;
+        Passenger newPassenger = Passenger(amountPaid,name,flights[flightkey].count);
+        flights[flightkey].passengersFunds.push(msg.sender);
+        flights[flightkey].passengers[buyer] = newPassenger;
     }
 
     /**
@@ -222,10 +263,22 @@ contract FlightSuretyData {
     */
     function creditInsurees
                                 (
+                                    bytes32 flightkey
                                 )
                                 external
                                 pure
+                                requireIsOperational
+                                flightRegistered(flightkey)
     {
+        address[] arrayRef = flights[flightkey].passengersFunds;
+        address passengerAddress;
+ 
+        for(uint c=0; c<arrayRef.length; c++) {
+            passengerAddress = arrayRef[c];
+            flights[flightkey].passengers[passengerAddress].wallet = flights[flightkey].passengers[passengerAddress].fundingAmount.mul(1.5);
+        }
+
+        emit Credited(flightkey);
     }
 
 
@@ -233,12 +286,22 @@ contract FlightSuretyData {
      *  @dev Transfers eligible payout funds to insuree
      *
     */
-    function pay
-                            (
-                            )
-                            external
-                            pure
-    {
+    //passengers can withdraw their money from passengersFunds
+
+    function safeWithdraw(uint256 amount,bytes32 flightkey) rateLimit(5 minutes){
+        //to protect again re entracy attack
+        //checks
+        require(msg.sender == tx.origin, "contracts not allowed");
+        require(flights[flightKey].passengersFunds[msg.sender].wallet>= amount, "insuffeint funds");
+        //effects 
+        uint256 amount = flights[flightKey].passengers[msg.sender].wallet;
+        flights[flightKey].passengers[msg.sender].wallet = flights[flightKey].passengers[msg.sender].wallet.sub(amount);
+        //interaction
+        msg.sender.transfer(amount);
+
+
+        emit fundsWithdrawn(msg.sender , amount)
+
     }
 
    /**
@@ -265,21 +328,7 @@ contract FlightSuretyData {
 
     }
 
-    //passengers can withdraw their money from passengersFunds
-
-    function safeWithdraw(uint256 amount) rateLimit(5 minutes){
-        //checks
-        require(msg.sender == tx.origin, "contracts not allowed");
-        require(passengersFunds[msg.sender]>= amount, "insuffeint funds");
-        //effects 
-        uint256 amount = passengersFunds[msg.sender];
-        passengersFunds[msg.sender] = passengersFunds[msg.sender].sub(amount);
-        //interaction
-        msg.sender.transfer(amount);
-
-        emit PassengersFunds(msg.sender , amount)
-
-    }
+    
 
     function getFlightKey
                         (
@@ -302,7 +351,7 @@ contract FlightSuretyData {
                             external
                             payable
     {
-        fund();
+        //fund();
     }
 
 

@@ -25,16 +25,6 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
 
-    struct Flight {
-    	string name,
-        bool isRegistered;
-        uint8 statusCode;
-        uint256 updatedTimestamp;
-        address airline;
-        string from,
-        string to,
-    }
-    mapping(bytes32 => Flight) private flights;
     FlightSuretyData flightSuretyData;
     uint noOfRequiredCalls; //M the 50% of N the number of airline for multiparty consensus
     address[] multiCalls = new address[](0);
@@ -73,7 +63,7 @@ contract FlightSuretyApp {
         _;
     }
 
-
+    
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
@@ -93,7 +83,7 @@ contract FlightSuretyApp {
     }
 
     event FlightRegistered(bytes32 flightkey);
-    
+
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -190,6 +180,9 @@ contract FlightSuretyApp {
 
     	emit FlightRegistered(flightkey);
 
+    }
+    function buyInsurance(bytes32 flightkey) requireIsOperational payable external flightRegistered(flightkey){
+    	flightSuretyData.buy(flightkey, msg.value , msg.sender);
     }
 
    /**
@@ -412,4 +405,5 @@ contract FlightSuretyData {
                             pure;
     function getNoOfAirlines() external returns(uint256);
     function isAirlineRegistred(address airline) external returns(bool);
+
 }
