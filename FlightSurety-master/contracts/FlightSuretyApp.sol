@@ -82,7 +82,6 @@ contract FlightSuretyApp {
         flightSuretyData = FlightSuretyData(dataContract);
     }
 
-    event FlightRegistered(bytes32 flightkey);
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -90,7 +89,7 @@ contract FlightSuretyApp {
 
     function isOperational()
                             public
-                            pure
+                            view
                             returns(bool)
     {
         return flightSuretyData.isOperational();  // Modify to call data contract's status
@@ -111,8 +110,8 @@ contract FlightSuretyApp {
                             string nameOfAirline
                             )
                             external
-                            pure
                             requireIsOperational
+                            airlineHasFunded
                             returns(bool success, uint256 votes)
     {
     	//the msg sender can be an existing airline and wants to submit a new airline address to be registed
@@ -158,31 +157,18 @@ contract FlightSuretyApp {
                                 	string to,
                                 	address airlineAddress,
                                 	uint8 statusCode,
-                                	uint256 timestamp,
+                                	uint256 timestamp
 
                                 )
                                 external
-                                pure
                                 airlineHasFunded
     {
-    	Flight newFlight = Flight(
-    		name,
-    		true,
-			statusCode,
-			timestamp,
-			airlineAddress,
-			from,
-			to
-    		);
-
-    	bytes32 flightkey = getFlightKey(airlineAddress,name,timestamp);
-    	flights[flightkey] = newFlight;
-
-    	emit FlightRegistered(flightkey);
+    	flightSuretyData.registerFlight(name,from,to,airlineAddress,statusCode,timestamp);
 
     }
-    function buyInsurance(bytes32 flightkey) requireIsOperational payable external flightRegistered(flightkey){
-    	flightSuretyData.buy(flightkey, msg.value , msg.sender);
+
+    function buyInsurance(bytes32 flightkey,string Passengername,address airline) requireIsOperational payable external {
+    	flightSuretyData.buy(flightkey, msg.value , msg.sender,Passengername,airline);
     }
 
    /**
@@ -401,9 +387,29 @@ contract FlightSuretyData {
 
 	function isOperational() public view returns(bool);
 	function registerAirline(address newAirlineAddress, string name)
-                            external
-                            pure;
+                            external;
     function getNoOfAirlines() external returns(uint256);
     function isAirlineRegistred(address airline) external returns(bool);
+    function registerFlight(
+                                    string name,
+                                    string from,
+                                    string to,
+                                    address airlineAddress,
+                                    uint8 statusCode,
+                                    uint256 timestamp
+
+                            )
+                                external;
+    function hasFunded(address airline) external  returns(bool);
+    function buy
+                            (
+                                bytes32 flightkey,
+                                uint amountPaid,
+                                address buyer,
+                                string PassengerName,
+                                address airline
+                            )
+                            external
+                            payable;
 
 }

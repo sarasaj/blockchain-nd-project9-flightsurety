@@ -11,6 +11,7 @@ To install, download or clone the repo, then:
 `npm install`
 `npm install openzeppelin-solidity`
 `npm install truffle-hdwallet-provider`
+`npm install bignumber.js`
 `truffle compile`
 
 ## Develop Client

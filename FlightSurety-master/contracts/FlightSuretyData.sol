@@ -24,22 +24,22 @@ contract FlightSuretyData {
     mapping(address => uint256) authorizedContracts;
     
     
-    struct passenger {
+    struct Passenger {
         uint fundingAmount;
         string name;
         uint number;
-        unit wallet; //if flight is delayed funds will be stored here
+        uint wallet; //if flight is delayed funds will be stored here
     }
     struct Flight {
-        string name,
+        string name;
         bool isRegistered;
         uint8 statusCode;
         uint256 updatedTimestamp;
         address airline;
-        string from,
-        string to,
-        mapping(adress => Passenger) public passengers; //passengers and the amount they paid
-        address[] PassengersFunds = new address[](0);
+        string from;
+        string to;
+        mapping(address => Passenger) passengers; //passengers and the amount they paid
+        address[] passengersFunds;
         //mapping(address => uint256) private PassengersFunds; //funds for passengers to withdraw
     }
     mapping(bytes32 => Flight) public flights;
@@ -56,8 +56,9 @@ contract FlightSuretyData {
     /********************************************************************************************/
     event AirlinrRegistred(address airlineAddress);
     event Funded(address airlineAddress);
-    event Credited(flightkey);
-    event fundsWithdrawn(address passenger, amount);
+    event Credited(bytes32 flightkey);
+    event FundsWithdrawn(address passenger,uint amount);
+    event FlightRegistered(bytes32 flightkey);
 
     /**
     * @dev Constructor
@@ -107,9 +108,9 @@ contract FlightSuretyData {
         require(authorizedContracts[msg.sender] == 1, "Caller is not authorized");
         _;
     }
-    modifier isAirlineRegistred()
+    modifier isAirlineRegistred(address airline)
     {
-        require(isAirlineRegistred, "airline is not registerd");
+        require(airlines[airline].registerd, "airline is not registerd");
         _;
     }
     modifier isFundingEnough()
@@ -128,9 +129,9 @@ contract FlightSuretyData {
         counter = counter.add(1);
         uint256 guard = counter;
         _;
-        require(guard == counter ,"that is not allowed")
+        require(guard == counter ,"that is not allowed");
     }
-    modifier flightRegistered(flightkey)
+    modifier flightRegistered(bytes32 flightkey)
     {
         require(flights[flightkey].isRegistered, "flight is not registered");
         _;
@@ -165,7 +166,7 @@ contract FlightSuretyData {
                             )
                             external
                             requireContractOwner
-                            isCallerAuthorized
+                            //isCallerAuthorized
                             
     {
         require(mode != operational, "New mode must be different from existing mode");
@@ -189,7 +190,7 @@ contract FlightSuretyData {
     function getNoOfAirlines() external returns(uint256 ) {
         return noOfAirlines;
     }
-    function isAirlineRegistred(address airline) external returns(bool) {
+    function isRegistred(address airline) external returns(bool) {
         return airlines[airline].registerd;
 
     }
@@ -218,7 +219,6 @@ contract FlightSuretyData {
                             string name
                             )
                             external
-                            pure
                             requireIsOperational
     {
 
@@ -232,8 +232,34 @@ contract FlightSuretyData {
         emit AirlinrRegistred(newAirlineAddress);
 
     }
+    function registerFlight
+                                (
+                                    string name,
+                                    string from,
+                                    string to,
+                                    address airlineAddress,
+                                    uint8 statusCode,
+                                    uint256 timestamp
 
+                                )
+                                external
+                                
+    {
+        Flight memory newFlight;
+        newFlight.name = name;
+        newFlight.isRegistered = true;
+        newFlight.statusCode = statusCode;
+        newFlight.updatedTimestamp= timestamp;
+        newFlight.airline = airlineAddress;
+        newFlight.from = from;
+        newFlight.to = to;
+        newFlight.passengersFunds = new address[](0);
+        bytes32 flightkey = getFlightKey(airlineAddress,name,timestamp);
+        flights[flightkey] = newFlight;
 
+        emit FlightRegistered(flightkey);
+
+}
    /**
     * @dev Buy insurance for a flight
     *
@@ -243,7 +269,8 @@ contract FlightSuretyData {
                                 bytes32 flightkey,
                                 uint amountPaid,
                                 address buyer,
-                                string name
+                                string PassengerName,
+                                address airline
                             )
                             external
                             payable
@@ -253,9 +280,10 @@ contract FlightSuretyData {
         require(amountPaid<=0 ether, "you need to pay more than 0 ether or less than 1 ether");
         require(amountPaid>1 ether, "you can pay up to 1 ether only");
         uint count = flights[flightkey].passengersFunds.length;
-        Passenger newPassenger = Passenger(amountPaid,name,flights[flightkey].count);
+        Passenger memory newPassenger = Passenger(amountPaid,PassengerName,count,0);
         flights[flightkey].passengersFunds.push(msg.sender);
         flights[flightkey].passengers[buyer] = newPassenger;
+        airline.transfer(amountPaid);
     }
 
     /**
@@ -266,16 +294,16 @@ contract FlightSuretyData {
                                     bytes32 flightkey
                                 )
                                 external
-                                pure
                                 requireIsOperational
                                 flightRegistered(flightkey)
     {
-        address[] arrayRef = flights[flightkey].passengersFunds;
+        address[] storage arrayRef = flights[flightkey].passengersFunds;
         address passengerAddress;
  
         for(uint c=0; c<arrayRef.length; c++) {
             passengerAddress = arrayRef[c];
-            flights[flightkey].passengers[passengerAddress].wallet = flights[flightkey].passengers[passengerAddress].fundingAmount.mul(1.5);
+            flights[flightkey].passengers[passengerAddress].wallet = flights[flightkey].passengers[passengerAddress].fundingAmount.mul(3); //1.5 = 3/2
+            flights[flightkey].passengers[passengerAddress].wallet = flights[flightkey].passengers[passengerAddress].fundingAmount.div(2);
         }
 
         emit Credited(flightkey);
@@ -288,19 +316,19 @@ contract FlightSuretyData {
     */
     //passengers can withdraw their money from passengersFunds
 
-    function safeWithdraw(uint256 amount,bytes32 flightkey) rateLimit(5 minutes){
+    function safeWithdraw(uint256 amount,bytes32 flightKey) external rateLimit(5 minutes){
         //to protect again re entracy attack
         //checks
         require(msg.sender == tx.origin, "contracts not allowed");
-        require(flights[flightKey].passengersFunds[msg.sender].wallet>= amount, "insuffeint funds");
+        require(flights[flightKey].passengers[msg.sender].wallet >= amount, "insuffeint funds");
         //effects 
-        uint256 amount = flights[flightKey].passengers[msg.sender].wallet;
+        amount = flights[flightKey].passengers[msg.sender].wallet;
         flights[flightKey].passengers[msg.sender].wallet = flights[flightKey].passengers[msg.sender].wallet.sub(amount);
         //interaction
         msg.sender.transfer(amount);
 
 
-        emit fundsWithdrawn(msg.sender , amount)
+        emit FundsWithdrawn(msg.sender , amount);
 
     }
 
@@ -316,14 +344,14 @@ contract FlightSuretyData {
                             external
                             payable
                             requireIsOperational
-                            isAirlineRegistred
+                            isAirlineRegistred(airline)
                             isFundingEnough
-                            entracyGuard 
+                            entracyGuard(now)
 
     {
         airlines[airline].hasFunded = true;
         airlines[airline].fundingAmount = msg.value;
-
+        contractOwner.transfer(msg.value);
         emit Funded(airline);
 
     }
