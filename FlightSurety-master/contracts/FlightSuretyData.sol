@@ -28,7 +28,7 @@ contract FlightSuretyData {
         uint fundingAmount;
         string name;
         uint number;
-        uint wallet; //if flight is delayed funds will be stored here
+        uint256 wallet; //if flight is delayed funds will be stored here
     }
     struct Flight {
         string name;
@@ -136,6 +136,11 @@ contract FlightSuretyData {
         require(flights[flightkey].isRegistered, "flight is not registered");
         _;
     }
+    modifier airlineHasFunded()
+    {
+        require(airlines[msg.sender].hasFunded, "airline has not funded any ethers yet");
+        _;
+    }
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -194,7 +199,7 @@ contract FlightSuretyData {
         return airlines[airline].registerd;
 
     }
-    function authorizedContract(address dataContract) external requireContractOwner {
+    function  authorizedContract(address dataContract) external requireContractOwner {
       authorizedContracts[dataContract] = 1;
     }
     function deAuthorizedContract(address dataContract) external requireContractOwner {
@@ -203,6 +208,7 @@ contract FlightSuretyData {
     function hasFunded(address airline) external  returns(bool){
       return airlines[airline].hasFunded;
     }
+
     // function getFlight(bytes32 flightkey) returns()
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -220,6 +226,8 @@ contract FlightSuretyData {
                             )
                             external
                             requireIsOperational
+                            airlineHasFunded
+
     {
 
         Airline storage newAirline = airlines[newAirlineAddress];
@@ -243,6 +251,8 @@ contract FlightSuretyData {
 
                                 )
                                 external
+                                requireIsOperational
+                                airlineHasFunded
                                 
     {
         Flight memory newFlight;
@@ -322,13 +332,13 @@ contract FlightSuretyData {
         require(msg.sender == tx.origin, "contracts not allowed");
         require(flights[flightKey].passengers[msg.sender].wallet >= amount, "insuffeint funds");
         //effects 
-        amount = flights[flightKey].passengers[msg.sender].wallet;
-        flights[flightKey].passengers[msg.sender].wallet = flights[flightKey].passengers[msg.sender].wallet.sub(amount);
+        uint256 uamount = flights[flightKey].passengers[msg.sender].wallet;
+        flights[flightKey].passengers[msg.sender].wallet = flights[flightKey].passengers[msg.sender].wallet.sub(uamount);
         //interaction
-        msg.sender.transfer(amount);
+        msg.sender.transfer(uamount);
 
 
-        emit FundsWithdrawn(msg.sender , amount);
+        emit FundsWithdrawn(msg.sender , uamount);
 
     }
 
@@ -339,7 +349,6 @@ contract FlightSuretyData {
     */
     function fund
                             (
-                                address airline
                             )
                             external
                             payable

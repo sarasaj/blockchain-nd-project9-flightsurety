@@ -400,7 +400,7 @@ contract FlightSuretyData {
 
                             )
                                 external;
-    function hasFunded(address airline) external  returns(bool);
+    function hasFunded() external  returns(bool);
     function buy
                             (
                                 bytes32 flightkey,

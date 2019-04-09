@@ -54,7 +54,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
   it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
 
-      await config.flightSuretyData.setOperatingStatus(false);
+      //await config.flightSuretyData.setOperatingStatus(false);
 
       let reverted = false;
       try 
@@ -78,16 +78,45 @@ contract('Flight Surety Tests', async (accounts) => {
 
     // ACT
     try {
-        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+        await config.flightSuretyApp.registerAirline(newAirline,"2nd airline", {from: config.firstAirline});
     }
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.isAirline.call(newAirline); 
+    let result = await config.flightSuretyData.isRegistred.call(newAirline); 
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
 
+  });
+
+    it('(airline) Only existing airline may register a new airline until there are at least four airlines registered', async () => {
+
+
+    // ARRANGE
+    let airline2 = accounts[2];
+    let airline3 = accounts[3];
+    let airline4 = accounts[4];
+
+    // ACT
+    try {
+        await config.flightSuretyData.fund
+        await config.flightSuretyApp.registerAirline(newAirline,"2nd airline", {from: config.firstAirline});
+    }
+    catch(e) {
+
+    }
+    let result = await config.flightSuretyData.isRegistred.call(newAirline); 
+
+    // ASSERT
+    assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+
+  });
+    it('(airline) Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines', async () => {
+    
+  });
+    it('(airline) Airline can be registered, but does not participate in contract until it submits funding of 10 ether', async () => {
+    
   });
  
 
