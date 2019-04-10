@@ -19,11 +19,11 @@ contract FlightSuretyData {
         uint fundingAmount;
 
     }
-    
+
     mapping(address => Airline) airlines;
     mapping(address => uint256) authorizedContracts;
-    
-    
+
+
     struct Passenger {
         uint fundingAmount;
         string name;
@@ -43,7 +43,7 @@ contract FlightSuretyData {
         //mapping(address => uint256) private PassengersFunds; //funds for passengers to withdraw
     }
     mapping(bytes32 => Flight) public flights;
-    
+
 
     uint256 public noOfAirlines = 0;
     uint M= 2;
@@ -64,14 +64,14 @@ contract FlightSuretyData {
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
-    constructor() public
+    constructor(address firstAirline) public
     {
         contractOwner = msg.sender;
         //registering the 1st air line
-        Airline storage firstAirline = airlines[msg.sender];
-        firstAirline.airlineAddress = msg.sender;
-        firstAirline.name = "1st airline";
-        firstAirline.registerd = true;
+        Airline storage regfirstAirline = airlines[firstAirline];
+        regfirstAirline.airlineAddress = firstAirline;
+        regfirstAirline.name = "1st airline";
+        regfirstAirline.registerd = true;
         noOfAirlines++;
 
     }
@@ -172,7 +172,7 @@ contract FlightSuretyData {
                             external
                             requireContractOwner
                             //isCallerAuthorized
-                            
+
     {
         require(mode != operational, "New mode must be different from existing mode");
 
@@ -227,9 +227,7 @@ contract FlightSuretyData {
                             external
                             requireIsOperational
                             airlineHasFunded
-
     {
-
         Airline storage newAirline = airlines[newAirlineAddress];
         newAirline.airlineAddress = newAirlineAddress;
         newAirline.name = name;
@@ -253,7 +251,7 @@ contract FlightSuretyData {
                                 external
                                 requireIsOperational
                                 airlineHasFunded
-                                
+
     {
         Flight memory newFlight;
         newFlight.name = name;
@@ -309,7 +307,7 @@ contract FlightSuretyData {
     {
         address[] storage arrayRef = flights[flightkey].passengersFunds;
         address passengerAddress;
- 
+
         for(uint c=0; c<arrayRef.length; c++) {
             passengerAddress = arrayRef[c];
             flights[flightkey].passengers[passengerAddress].wallet = flights[flightkey].passengers[passengerAddress].fundingAmount.mul(3); //1.5 = 3/2
@@ -331,7 +329,7 @@ contract FlightSuretyData {
         //checks
         require(msg.sender == tx.origin, "contracts not allowed");
         require(flights[flightKey].passengers[msg.sender].wallet >= amount, "insuffeint funds");
-        //effects 
+        //effects
         uint256 uamount = flights[flightKey].passengers[msg.sender].wallet;
         flights[flightKey].passengers[msg.sender].wallet = flights[flightKey].passengers[msg.sender].wallet.sub(uamount);
         //interaction
@@ -365,7 +363,7 @@ contract FlightSuretyData {
 
     }
 
-    
+
 
     function getFlightKey
                         (

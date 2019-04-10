@@ -62,8 +62,12 @@ contract FlightSuretyApp {
         require(flightSuretyData.hasFunded(msg.sender), "airline has not funded any ethers yet");
         _;
     }
+    modifier isAirline()
+    {
+        require(flightSuretyData.isAirlineRegistred(msg.sender), "you need to register first to fund any ether");
+        _;
+    }
 
-    
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
