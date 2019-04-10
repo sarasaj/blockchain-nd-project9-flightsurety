@@ -27,7 +27,7 @@ contract FlightSuretyApp {
 
     FlightSuretyData flightSuretyData;
     uint noOfRequiredCalls; //M the 50% of N the number of airline for multiparty consensus
-    address[] multiCalls = new address[](0);
+    address[] public multiCalls = new address[](0);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -99,6 +99,19 @@ contract FlightSuretyApp {
         return flightSuretyData.isOperational();  // Modify to call data contract's status
     }
 
+    function getNoOfcalls() public
+                            view 
+                            returns(uint256)
+    {
+        return multiCalls.length;
+    }
+    function getNoOfVotesNeeded() 
+                            public
+                            view
+                            returns(uint)
+    {
+        return noOfRequiredCalls;
+    }
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -137,7 +150,7 @@ contract FlightSuretyApp {
 	        }
 	        require(!isDuplicate, "Caller has already called this function.");
 
-	        noOfRequiredCalls = flightSuretyData.getNoOfAirlines()/2; //50% for multiparty consensus
+	        noOfRequiredCalls = (flightSuretyData.getNoOfAirlines()).div(2); //50% for multiparty consensus
 
 	        multiCalls.push(msg.sender);
 	        if (multiCalls.length >= noOfRequiredCalls) {
@@ -390,7 +403,10 @@ contract FlightSuretyApp {
 contract FlightSuretyData {
 
 	function isOperational() public view returns(bool);
-	function registerAirline(address newAirlineAddress, string name)
+	function registerAirline(
+                            address newAirlineAddress,
+                            string name
+                            )
                             external;
     function getNoOfAirlines() external returns(uint256);
     function isAirlineRegistred(address airline) external returns(bool);
@@ -404,7 +420,7 @@ contract FlightSuretyData {
 
                             )
                                 external;
-    function hasFunded() external  returns(bool);
+    function hasFunded(address airline) external  returns(bool);
     function buy
                             (
                                 bytes32 flightkey,

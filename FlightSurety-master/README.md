@@ -13,6 +13,7 @@ To install, download or clone the repo, then:
 `npm install truffle-hdwallet-provider`
 `npm install bignumber.js`
 `truffle compile`
+`npm install web3`
 
 ## Develop Client
 

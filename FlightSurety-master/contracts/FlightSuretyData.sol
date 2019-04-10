@@ -45,7 +45,7 @@ contract FlightSuretyData {
     mapping(bytes32 => Flight) public flights;
 
 
-    uint256 public noOfAirlines = 0;
+    uint256 noOfAirlines = 0;
     uint M= 2;
     address[] multiCalls = new address[](0);
     uint fundingValue = 10 ether;
@@ -54,7 +54,7 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
-    event AirlinrRegistred(address airlineAddress);
+    event AirlinrRegistred(address airlineAddress, uint256 number);
     event Funded(address airlineAddress);
     event Credited(bytes32 flightkey);
     event FundsWithdrawn(address passenger,uint amount);
@@ -192,7 +192,7 @@ contract FlightSuretyData {
         }
     }
 
-    function getNoOfAirlines() external returns(uint256 ) {
+    function getNoOfAirlines() external returns(uint256) {
         return noOfAirlines;
     }
     function isRegistred(address airline) external returns(bool) {
@@ -205,7 +205,7 @@ contract FlightSuretyData {
     function deAuthorizedContract(address dataContract) external requireContractOwner {
       delete authorizedContracts[dataContract];
     }
-    function hasFunded(address airline) external  returns(bool){
+    function hasFunded(address airline) external returns(bool){
       return airlines[airline].hasFunded;
     }
 
@@ -235,7 +235,7 @@ contract FlightSuretyData {
 
         noOfAirlines++;
 
-        emit AirlinrRegistred(newAirlineAddress);
+        emit AirlinrRegistred(newAirlineAddress,noOfAirlines);
 
     }
     function registerFlight
@@ -351,15 +351,15 @@ contract FlightSuretyData {
                             external
                             payable
                             requireIsOperational
-                            isAirlineRegistred(airline)
+                            isAirlineRegistred(msg.sender)
                             isFundingEnough
                             entracyGuard(now)
 
     {
-        airlines[airline].hasFunded = true;
-        airlines[airline].fundingAmount = msg.value;
+        airlines[msg.sender].hasFunded = true;
+        airlines[msg.sender].fundingAmount = msg.value;
         contractOwner.transfer(msg.value);
-        emit Funded(airline);
+        emit Funded(msg.sender);
 
     }
 
@@ -386,7 +386,7 @@ contract FlightSuretyData {
                             external
                             payable
     {
-        fund();
+        //fund();
     }
 
 
