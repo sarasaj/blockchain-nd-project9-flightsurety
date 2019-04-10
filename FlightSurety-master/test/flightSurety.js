@@ -163,8 +163,7 @@ contract('Flight Surety Tests', async (accounts) => {
       // await config.flightSuretyApp.registerAirline(airline4,"4th airline", {from: airline3});
     }
     catch(e) {
-      let AirlinesNum = await config.flightSuretyData.getNoOfAirlines();
-      console.log("error in registering getNoOfAirlines() :"+AirlinesNum.toNumber() ,e);
+      console.log("error in registering" ,e);
     }
 
 
