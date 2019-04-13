@@ -57,14 +57,14 @@ contract FlightSuretyApp {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
     }
-    modifier airlineHasFunded()
+    modifier airlineHasFunded(address airline)
     {
         require(flightSuretyData.hasFunded(msg.sender), "airline has not funded any ethers yet");
         _;
     }
     modifier isAirline()
     {
-        require(flightSuretyData.isAirlineRegistred(msg.sender), "you need to register first to fund any ether");
+        require(flightSuretyData.isRegistred(msg.sender), "you need to register first to fund any ether");
         _;
     }
 
@@ -128,19 +128,17 @@ contract FlightSuretyApp {
                             )
                             external
                             requireIsOperational
-                            airlineHasFunded
-                            returns(bool success, uint256 votes)
+                            returns(bool success)
     {
     	//the msg sender can be an existing airline and wants to submit a new airline address to be registed
     	//so we have a senderAddress from msg.sender and new airlineToBeRegistered address
-
+        success= false;
     	if(flightSuretyData.getNoOfAirlines() <= 4){ //if airline are less than 4 only regired airlines can register a new airline
-    		require(flightSuretyData.isAirlineRegistred(msg.sender), "only registered airlines can register a new one"); // msg.sender must be a registerd air line to regsiter a new address as a new airline
-    		flightSuretyData.registerAirline(airlineToBeRegistered,nameOfAirline);
+    		require(flightSuretyData.isRegistred(msg.sender), "only registered airlines can register a new one"); // msg.sender must be a registerd air line to regsiter a new address as a new airline
+            flightSuretyData.registerAirline(airlineToBeRegistered,nameOfAirline,msg.sender);
     		success = true;
-
-    	}else { //multi party consensus
-
+        } 
+    	else { //multi party consensus
 	        bool isDuplicate = false;
 	        for(uint c=0; c<multiCalls.length; c++) {
 	            if (multiCalls[c] == msg.sender) {
@@ -151,15 +149,17 @@ contract FlightSuretyApp {
 	        require(!isDuplicate, "Caller has already called this function.");
 
 	        noOfRequiredCalls = (flightSuretyData.getNoOfAirlines()).div(2); //50% for multiparty consensus
-
 	        multiCalls.push(msg.sender);
+            success = false;
+
 	        if (multiCalls.length >= noOfRequiredCalls) {
-	            flightSuretyData.registerAirline(airlineToBeRegistered,nameOfAirline);
+	            flightSuretyData.registerAirline(airlineToBeRegistered,nameOfAirline,msg.sender);
     			success = true;
 	            multiCalls = new address[](0);
 	        }
     	}
-        return (success, 0);
+        
+        return success;
     }
 
 
@@ -178,7 +178,7 @@ contract FlightSuretyApp {
 
                                 )
                                 external
-                                airlineHasFunded
+                                airlineHasFunded(airlineAddress)
     {
     	flightSuretyData.registerFlight(name,from,to,airlineAddress,statusCode,timestamp);
 
@@ -200,8 +200,11 @@ contract FlightSuretyApp {
                                     uint8 statusCode
                                 )
                                 internal
-                                pure
     {
+        if(statusCode == STATUS_CODE_LATE_AIRLINE){
+            bytes32 flightKey = getFlightKey (airline, flight,timestamp);
+            flightSuretyData.creditInsurees(flightKey);
+        }
     }
 
 
@@ -405,11 +408,12 @@ contract FlightSuretyData {
 	function isOperational() public view returns(bool);
 	function registerAirline(
                             address newAirlineAddress,
-                            string name
+                            string name,
+                            address regAirline
                             )
                             external;
     function getNoOfAirlines() external returns(uint256);
-    function isAirlineRegistred(address airline) external returns(bool);
+    function isRegistred(address airline) external returns(bool);
     function registerFlight(
                                     string name,
                                     string from,
@@ -431,5 +435,6 @@ contract FlightSuretyData {
                             )
                             external
                             payable;
+    function creditInsurees(bytes32 flightkey) external;
 
 }

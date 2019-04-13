@@ -138,6 +138,7 @@ contract('Flight Surety Tests', async (accounts) => {
     let airline3 = accounts[3];
     let airline4 = accounts[4];
     let airline5 = accounts[5];
+    
 
     // ACT
     try {
@@ -149,35 +150,62 @@ contract('Flight Surety Tests', async (accounts) => {
     try {
       //registered by exisiting airlines
       await config.flightSuretyApp.registerAirline(airline2,"2nd airline", {from: firstAirline});
-      //   await config.flightSuretyApp.registerAirline(airline3,"3rd airline", {from: firstAirline});
-      //   await config.flightSuretyApp.registerAirline(airline4,"4th airline", {from: firstAirline});
+      await config.flightSuretyApp.registerAirline(airline3,"3rd airline", {from: firstAirline});
+      await config.flightSuretyApp.registerAirline(airline4,"4th airline", {from: firstAirline});
 
-      //   //funding 
-      //   await config.flightSuretyData.fund({from: airline2, value:initFund});
-      //   await config.flightSuretyData.fund({from: airline3, value:initFund});
-      //   await config.flightSuretyData.fund({from: airline4, value:initFund});
-
-      // //registered by multiconsensus
-      // await config.flightSuretyApp.registerAirline(airline4,"4th airline", {from: firstAirline});
-      // await config.flightSuretyApp.registerAirline(airline4,"4th airline", {from: airline2});
-      // await config.flightSuretyApp.registerAirline(airline4,"4th airline", {from: airline3});
     }
     catch(e) {
-      console.log("error in registering" ,e);
+      console.log("error in registering " ,e);
     }
-
-
-    let result1 = await config.flightSuretyData.isRegistred.call(airline2);
-    let result2 = await config.flightSuretyData.isRegistred.call(airline4);
-    let result3 = await config.flightSuretyData.isRegistred.call(airline5);
+    let result2 = await config.flightSuretyData.isRegistred.call(airline2);
+    let result3 = await config.flightSuretyData.isRegistred.call(airline3);
+    let result4 = await config.flightSuretyData.isRegistred.call(airline4);
 
     // ASSERT
-    assert.equal(result1, true, "Airlines registered");
-
+    assert.equal(result2, true, "Airline2 not registered");
+    assert.equal(result3, true, "Airline3 not registered");
+    assert.equal(result4, true, "Airline4 not registered");
   });
-  // it('(airline) Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines', async () => {
+  it('(airline) Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines', async () => {
+    //registered airlines from 1-4
+    let airline2 = accounts[2];
+    let airline3 = accounts[3];
+    let airline4 = accounts[4];
 
-  // });
+    //new airline 5 
+    let airline5 = accounts[5];
+
+    // ACT
+    try {
+        //funding 
+      await config.flightSuretyData.fund({from: airline2, value:initFund});
+      await config.flightSuretyData.fund({from: airline3, value:initFund});
+      await config.flightSuretyData.fund({from: airline4, value:initFund});
+
+
+      //registered by multiconsensus
+      await config.flightSuretyApp.registerAirline(airline5,"5th airline", {from: airline4});
+      await config.flightSuretyApp.registerAirline(airline5,"5th airline", {from: airline2});
+      await config.flightSuretyApp.registerAirline(airline5,"5th airline", {from: airline3});
+    }
+    catch(e) {
+      console.log("error in funding",e);
+    }
+    try {
+      //registered by multiparty consensus
+      //you need atleast 2 or 3 calls to register an aitline
+      await config.flightSuretyApp.registerAirline(airline5,"5th airline", {from: airline4});
+      await config.flightSuretyApp.registerAirline(airline5,"5th airline", {from: airline2});
+      await config.flightSuretyApp.registerAirline(airline5,"5th airline", {from: airline3});
+
+    }
+    catch(e) {
+      console.log("error in reisting",e);
+    }
+
+    let result5 = await config.flightSuretyData.isRegistred.call(airline5);
+    assert.equal(result5, true, "Airline5 not registered");
+  });
 
 
 

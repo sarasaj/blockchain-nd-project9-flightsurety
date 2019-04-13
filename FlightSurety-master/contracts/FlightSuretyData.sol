@@ -45,7 +45,7 @@ contract FlightSuretyData {
     mapping(bytes32 => Flight) public flights;
 
 
-    uint256 noOfAirlines = 0;
+    uint noOfAirlines = 0;
     uint M= 2;
     address[] multiCalls = new address[](0);
     uint fundingValue = 10 ether;
@@ -54,7 +54,7 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
-    event AirlinrRegistred(address airlineAddress, uint256 number);
+    event AirlinrRegistred(address airlineAddress, uint number);
     event Funded(address airlineAddress);
     event Credited(bytes32 flightkey);
     event FundsWithdrawn(address passenger,uint amount);
@@ -136,9 +136,9 @@ contract FlightSuretyData {
         require(flights[flightkey].isRegistered, "flight is not registered");
         _;
     }
-    modifier airlineHasFunded()
+    modifier airlineHasFunded(address airline)
     {
-        require(airlines[msg.sender].hasFunded, "airline has not funded any ethers yet");
+        require(airlines[airline].hasFunded, "airline has not funded any ethers yet");
         _;
     }
     /********************************************************************************************/
@@ -184,7 +184,7 @@ contract FlightSuretyData {
             }
         }
         require(!isDuplicate, "Caller has already called this function.");
-        M = noOfAirlines/2; //%05% for multiparty consensus
+        M = noOfAirlines.div(2); //%05% for multiparty consensus
         multiCalls.push(msg.sender);
         if (multiCalls.length >= M) {
             operational = mode;
@@ -192,14 +192,14 @@ contract FlightSuretyData {
         }
     }
 
-    function getNoOfAirlines() external returns(uint256) {
+    function getNoOfAirlines() external returns(uint) {
         return noOfAirlines;
     }
     function isRegistred(address airline) external returns(bool) {
         return airlines[airline].registerd;
 
     }
-    function  authorizedContract(address dataContract) external requireContractOwner {
+    function authorizedContract(address dataContract) external requireContractOwner {
       authorizedContracts[dataContract] = 1;
     }
     function deAuthorizedContract(address dataContract) external requireContractOwner {
@@ -222,11 +222,12 @@ contract FlightSuretyData {
 
     function registerAirline(
                             address newAirlineAddress,
-                            string name
+                            string name,
+                            address regAirline
                             )
                             external
                             requireIsOperational
-                            airlineHasFunded
+                            airlineHasFunded(regAirline)
     {
         Airline storage newAirline = airlines[newAirlineAddress];
         newAirline.airlineAddress = newAirlineAddress;
@@ -250,7 +251,7 @@ contract FlightSuretyData {
                                 )
                                 external
                                 requireIsOperational
-                                airlineHasFunded
+                                airlineHasFunded(airlineAddress)
 
     {
         Flight memory newFlight;
