@@ -34,24 +34,22 @@ for (var i = 0; i < count; i++) {
 }
 
 //(oracles) Oracle Updates & Oracle Functionality
-flightSuretyApp.events.OracleRequest({
-    fromBlock: 0
-  }, function (error, event) {
+flightSuretyApp.events.OracleRequest({fromBlock: 0 }, function (error, event) {
     if (error) console.log(error)
     
     console.log(event)
 	let index = event.returnValues.index;
 	let airline = event.returnValues.airline;
-	let flight = event.returnValues.flight;
+	let flight = event.retuurnValues.flight;
 	let timestamp = event.returnValues.timestamp;
-
 	var statusCode = Math.floor(Math.random() * 6)*10 //random as per rubric
 	console.log("random statusCode", statusCode)
 
-	  for (let i = 0; i < OracleArray.length; i++) {
-	    if (OracleArray[i][1].includes(index)) {
-	      console.log(`Oracle With Matched Index Found`);
-	      submitOracleResponse(index, airline, flight, timestamp, statusCode, OracleArray[i][0])
+	  for (let i = 0; i < oracles.length; i++) {
+	    if (oracles[i][1].includes(index)) { //looping through all registered oracles, identify those oracles for which the OracleRequest event applies
+	      console.log('matcing index found');
+	      submitOracleResponse(index, airline, flight, timestamp, statusCode, oracles[i][0])
+	      //respond by calling into FlightSuretyApp contract with random status code
 	    }
 	  }
 });
