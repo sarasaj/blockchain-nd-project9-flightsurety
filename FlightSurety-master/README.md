@@ -12,8 +12,12 @@ To install, download or clone the repo, then:
 `npm install openzeppelin-solidity`
 `npm install truffle-hdwallet-provider`
 `npm install bignumber.js`
-`truffle compile`
 `npm install web3`
+`npm install -g webpack-dev-server`
+`npm install --save-dev webpack`
+`npm install --save-dev webpack-dev-server`
+npm install --save-dev webpack-cli
+`truffle compile`
 
 ## Develop Client
 
@@ -24,8 +28,10 @@ To run truffle tests:
 
 To use the dapp:
 
-`truffle migrate`
+`truffle migrate` < //try to set the gas limit in ganache & truffle.config if you had a problem
 `npm run dapp`
+
+
 
 To view dapp:
 
