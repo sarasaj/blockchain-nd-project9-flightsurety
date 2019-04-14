@@ -13,7 +13,11 @@ let fees = web3.utils.toWei('1', 'ether');;
 const ORACLES_COUNT = 20;
 let accounts;
 
-RegisterAllOracles(count){ // a funvtion that registers oracles 
+//(oracles1) Oracle functionality is implemented in the server app.
+//(oracles2) 20+ oracles are registered and their assigned indexes are persisted in memory
+registerAllOracles(ORACLES_COUNT);
+
+registerAllOracles(count){ // a funvtion that registers oracles 
 accounts = await web3.eth.getAccounts();
 //fees = await flightSuretyApp.methods.REGISTRATION_FEE.call({from: accounts[0]});
 let account;
@@ -29,11 +33,27 @@ for (var i = 0; i < count; i++) {
 
 }
 
+//(oracles) Oracle Updates & Oracle Functionality
 flightSuretyApp.events.OracleRequest({
     fromBlock: 0
   }, function (error, event) {
     if (error) console.log(error)
+    
     console.log(event)
+	let index = event.returnValues.index;
+	let airline = event.returnValues.airline;
+	let flight = event.returnValues.flight;
+	let timestamp = event.returnValues.timestamp;
+
+	var statusCode = Math.floor(Math.random() * 6)*10 //random as per rubric
+	console.log("random statusCode", statusCode)
+
+	  for (let i = 0; i < OracleArray.length; i++) {
+	    if (OracleArray[i][1].includes(index)) {
+	      console.log(`Oracle With Matched Index Found`);
+	      submitOracleResponse(index, airline, flight, timestamp, statusCode, OracleArray[i][0])
+	    }
+	  }
 });
 
 const app = express();
