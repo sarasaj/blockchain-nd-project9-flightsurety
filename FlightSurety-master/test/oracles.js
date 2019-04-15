@@ -4,7 +4,7 @@ var Test = require('../config/testConfig.js');
 
 contract('Oracles', async (accounts) => {
 
-  const TEST_ORACLES_COUNT = 20;
+  const TEST_ORACLES_COUNT = 9;
   var config;
   before('setup contract', async () => {
     config = await Test.Config(accounts);
@@ -27,9 +27,9 @@ contract('Oracles', async (accounts) => {
 
     // ACT
     for(let a=1; a<TEST_ORACLES_COUNT; a++) {      
-      await config.flightSuretyApp.registerOracle({ from: accounts[0], value: fee });
-      let result = await config.flightSuretyApp.getMyIndexes.call({from: accounts[0]});
-      console.log(`Oracle Registered: ${result[0]}, ${result[1]}, ${result[2]}`);
+      await config.flightSuretyApp.registerOracle({ from: accounts[a], value: fee });
+      let result = await config.flightSuretyApp.getMyIndexes.call({from: accounts[a]});
+      //console.log(`Oracle Registered: ${result[0]}, ${result[1]}, ${result[2]}`);
     }
   });
 
@@ -50,17 +50,17 @@ contract('Oracles', async (accounts) => {
     for(let a=1; a<TEST_ORACLES_COUNT; a++) {
 
       // Get oracle information
-      let oracleIndexes = await config.flightSuretyApp.getMyIndexes.call({ from: accounts[1]});
+      let oracleIndexes = await config.flightSuretyApp.getMyIndexes.call({ from: accounts[a]});
       for(let idx=0;idx<3;idx++) {
 
         try {
           // Submit a response...it will only be accepted if there is an Index match
-          await config.flightSuretyApp.submitOracleResponse(oracleIndexes[idx], config.firstAirline, flight, timestamp, STATUS_CODE_ON_TIME, { from: accounts[1] });
+          await config.flightSuretyApp.submitOracleResponse(oracleIndexes[idx], config.firstAirline, flight, timestamp, STATUS_CODE_ON_TIME, { from: accounts[a] });
 
         }
         catch(e) {
           // Enable this when debugging
-         //  console.log('\nError', idx, oracleIndexes[idx].toNumber(), flight, timestamp);
+          // console.log('\nError', idx, oracleIndexes[idx].toNumber(), flight, timestamp);
         }
 
       }

@@ -25,7 +25,7 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
 
-    FlightSuretyData flightSuretyData;
+   FlightSuretyData flightSuretyData;
     uint noOfRequiredCalls; //M the 50% of N the number of airline for multiparty consensus
     address[] public multiCalls = new address[](0);
 
@@ -422,19 +422,9 @@ contract FlightSuretyData {
                                     uint8 statusCode,
                                     uint256 timestamp
 
-                            )
-                                external;
+                            ) external;
     function hasFunded(address airline) external  returns(bool);
-    function buy
-                            (
-                                bytes32 flightkey,
-                                uint amountPaid,
-                                address buyer,
-                                string PassengerName,
-                                address airline
-                            )
-                            external
-                            payable;
+    function buy(bytes32 flightkey, uint amountPaid, address buyer, string PassengerName, address airline) external payable;
     function creditInsurees(bytes32 flightkey) external;
 
 }

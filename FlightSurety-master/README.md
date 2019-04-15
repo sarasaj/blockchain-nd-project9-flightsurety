@@ -16,7 +16,7 @@ To install, download or clone the repo, then:
 `npm install -g webpack-dev-server`
 `npm install --save-dev webpack`
 `npm install --save-dev webpack-dev-server`
-npm install --save-dev webpack-cli
+`npm install --save-dev webpack-cli`
 `truffle compile`
 
 ## Develop Client
