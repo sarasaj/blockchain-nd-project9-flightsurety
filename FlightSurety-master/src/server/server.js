@@ -4,7 +4,7 @@ import express from 'express';
 import 'babel-polyfill';
 var Web3 = require('web3');
 
-const ORACLES_COUNT = 5;
+const ORACLES_COUNT = 21;
 var accounts;
 var oracles = [];
 let fees; 
@@ -20,36 +20,38 @@ let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddre
 
 registerAllOracles();
 
+
 async function registerAllOracles(){ // a function that registers oracles 
 accounts = await web3.eth.getAccounts();
 fees = await flightSuretyApp.methods.REGISTRATION_FEE.call({from: accounts[0]});
-console.log(`Oracle Count = ${oracles.length}`);
+//console.log(`Oracle array Count = ${oracles.length}`);
 
 let limit = ORACLES_COUNT+5;
 	for (let i = 5; i < limit ; i++) {
 		console.log("account:"+accounts[i]+"		i:"+i);
-		await registerOneOracle(accounts[i]);
+		registerOneOracle(accounts[i]);
 	}
+	
 }
 async function registerOneOracle(account){
 	try{
-	console.log("before");
-	await flightSuretyApp.methods.registerOracle.send({ from: account, value: fees, gas:3000000});
-	console.log("after");
+	flightSuretyApp.methods.registerOracle.send({ from: account, value: fees, gas:3000000});
 	let result = await flightSuretyApp.methods.getMyIndexes().call({from: account});
-	  console.log("Oracle Registered:" +result[0]+"-"+result[1]+"-"+result[2]);
-		oracles.push([account, result]);
-		console.log("New Oracle Count = "+oracles.length);
+	console.log("Oracle Registered:" +result[0]+"-"+result[1]+"-"+result[2]);
+	oracles.push([account, result]);
+	//console.log("New Oracle array Count = "+oracles.length);
+	
 	}catch(e)
   {
     console.log(e);
   }
 }
-async function submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode, OracleAddress) {
+function submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode, OracleAddress) {
   try{
-    await flightSuretyApp.methods.submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode)
+    flightSuretyApp.methods.submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode)
     .send({
-      from: OracleAddress,
+			from: OracleAddress,
+			gas: 3000000
     });
 
   }
@@ -74,7 +76,7 @@ flightSuretyApp.events.OracleRequest({fromBlock: 0 }, function (error, event) {
 	  for (let i = 0; i < oracles.length; i++) {
 	    if (oracles[i][1].includes(index)) { //looping through all registered oracles, identify those oracles for which the OracleRequest event applies
 	      console.log('matcing index found account'+oracles[i][0]);
-	      await submitOracleResponse(index, airline, flight, timestamp, statusCode,oracles[i][0]);
+	      submitOracleResponse(index, airline, flight, timestamp, statusCode,oracles[i][0]);
 	      //respond by calling into FlightSuretyApp contract with random status code
 	    }
 	  }
