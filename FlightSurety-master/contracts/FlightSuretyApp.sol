@@ -286,10 +286,7 @@ contract FlightSuretyApp {
 
         uint8[3] memory indexes = generateIndexes(msg.sender);
 
-        oracles[msg.sender] = Oracle({
-                                        isRegistered: true,
-                                        indexes: indexes
-                                    });
+        oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
     }
 
     function getMyIndexes

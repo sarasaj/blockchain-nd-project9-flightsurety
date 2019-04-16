@@ -22,14 +22,13 @@ To install, download or clone the repo, then:
 ## Develop Client
 
 To run truffle tests:
-
-`truffle test ./test/flightSurety.js`
+`truffle test ./test/flightSurety.js` better test it in truffle.cmd develop so you won't have any problems with the nonce
 `truffle test ./test/oracles.js`
 
 To use the dapp:
 
-`truffle migrate` < //try to set the gas limit in ganache & truffle.config if you had a problem
-`npm run dapp`
+`truffle migrate` < try to set the gas limit in ganache & truffle.config if you had a problem
+`npm run dapp` < make sure you run on the same port 8545 in ganache, config.json in both dapp & server also metamask
 
 
 
