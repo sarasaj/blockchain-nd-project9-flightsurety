@@ -43,7 +43,7 @@ contract FlightSuretyData {
         //mapping(address => uint256) private PassengersFunds; //funds for passengers to withdraw
     }
     mapping(bytes32 => Flight) public flights;
-
+    mapping(string => bytes32) flightsKeys;
 
     uint noOfAirlines = 0;
     uint M= 2;
@@ -208,6 +208,9 @@ contract FlightSuretyData {
     function hasFunded(address airline) external returns(bool){
       return airlines[airline].hasFunded;
     }
+    function getFlight(string name) external returns(bytes32){
+        return flightsKeys[name];
+    }
 
     // function getFlight(bytes32 flightkey) returns()
     /********************************************************************************************/
@@ -258,13 +261,14 @@ contract FlightSuretyData {
         newFlight.name = name;
         newFlight.isRegistered = true;
         newFlight.statusCode = statusCode;
-        newFlight.updatedTimestamp= timestamp;
+        newFlight.updatedTimestamp = timestamp;
         newFlight.airline = airlineAddress;
         newFlight.from = from;
         newFlight.to = to;
         newFlight.passengersFunds = new address[](0);
         bytes32 flightkey = getFlightKey(airlineAddress,name,timestamp);
         flights[flightkey] = newFlight;
+        flightsKeys[name] = flightkey;
 
         emit FlightRegistered(flightkey);
 
@@ -325,11 +329,11 @@ contract FlightSuretyData {
     */
     //passengers can withdraw their money from passengersFunds
 
-    function safeWithdraw(uint256 amount,bytes32 flightKey) external rateLimit(5 minutes){
+    function safeWithdraw(bytes32 flightKey) external rateLimit(5 minutes){
         //to protect again re entracy attack
         //checks
         require(msg.sender == tx.origin, "contracts not allowed");
-        require(flights[flightKey].passengers[msg.sender].wallet >= amount, "insuffeint funds");
+        require(flights[flightKey].passengers[msg.sender].wallet > 0, "insuffeint funds");
         //effects
         uint256 uamount = flights[flightKey].passengers[msg.sender].wallet;
         flights[flightKey].passengers[msg.sender].wallet = flights[flightKey].passengers[msg.sender].wallet.sub(uamount);

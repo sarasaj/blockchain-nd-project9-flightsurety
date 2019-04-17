@@ -35,21 +35,22 @@ let limit = ORACLES_COUNT+5;
 }
 async function registerOneOracle(account){
 	try{
-	flightSuretyApp.methods.registerOracle.send({ from: account, value: fees, gas:3000000});
+	flightSuretyApp.methods.registerOracle.send({ from: account, value: fees, gas:3000000}); //when i use await here it causes problems and stops excution 
+	//i reviewed that with mentors and friends on slack and no one is able to figure out the problem .. the contract function run perfectly the problem is in the serer
 	let result = await flightSuretyApp.methods.getMyIndexes().call({from: account});
 	console.log("Oracle Registered:" +result[0]+"-"+result[1]+"-"+result[2]);
 	oracles.push([account, result]);
 	//console.log("New Oracle array Count = "+oracles.length);
-	
 	}catch(e)
   {
     console.log(e);
-  }
+	}
 }
+	
+// }
 function submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode, OracleAddress) {
   try{
-    flightSuretyApp.methods.submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode)
-    .send({
+    flightSuretyApp.methods.submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode).send({
 			from: OracleAddress,
 			gas: 3000000
     });
@@ -62,7 +63,7 @@ function submitOracleResponse(index, airline, flight, timestamp, FlightStatusCod
 
 }
 // (oracles) Oracle Updates & Oracle Functionality
-flightSuretyApp.events.OracleRequest({fromBlock: 0 }, function (error, event) {
+ flightSuretyApp.events.OracleRequest({fromBlock: 0 },function (error, event) {
     if (error) console.log(error)
     
   //console.log("event values:"+JSON.stringify(event.returnValues));
@@ -71,15 +72,25 @@ flightSuretyApp.events.OracleRequest({fromBlock: 0 }, function (error, event) {
 	let flight = JSON.stringify(event.returnValues.flight);
 	let timestamp = JSON.stringify(event.returnValues.timestamp);
 	var statusCode = Math.floor(Math.random() * 6)*10 //random as per rubric
-	console.log("random statusCode", statusCode);
+	console.log("oracleRequest - index:"+ index+"	flight"+ flight);
+try {
+	for (let i = 0; i < oracles.length; i++) {
+		console.log("i:"+ i);
+		var indexesArray = oracles[i][1];
+		for(let idx=0;idx<3;idx++) {
+			if(indexesArray[idx] == index){
+				console.log('matcing index found account'+oracles[i][0]+"	indx:"+indexesArray[idx]);
+				//looping through all registered oracles, identify those oracles for which the OracleRequest event applies
+				submitOracleResponse(index, airline, flight, timestamp, statusCode,oracles[i][0]);
+				//respond by calling into FlightSuretyApp contract with random status code
+			}
+			 
+	}
+	}
+}catch(e){
 
-	  for (let i = 0; i < oracles.length; i++) {
-	    if (oracles[i][1].includes(index)) { //looping through all registered oracles, identify those oracles for which the OracleRequest event applies
-	      console.log('matcing index found account'+oracles[i][0]);
-	      submitOracleResponse(index, airline, flight, timestamp, statusCode,oracles[i][0]);
-	      //respond by calling into FlightSuretyApp contract with random status code
-	    }
-	  }
+}
+	  
 });
 
 const app = express();
