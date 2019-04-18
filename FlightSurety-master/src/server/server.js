@@ -29,7 +29,10 @@ fees = await flightSuretyApp.methods.REGISTRATION_FEE.call({from: accounts[0]});
 let limit = ORACLES_COUNT+5;
 	for (let i = 5; i < limit ; i++) {
 		console.log("account:"+accounts[i]+"		i:"+i);
-		await registerOneOracle(accounts[i]);
+		registerOneOracle(accounts[i]); 
+	}
+	for (let i = 5; i < limit ; i++) {
+		print(accounts[i]); 
 	}
 	
 }
@@ -37,9 +40,6 @@ async function registerOneOracle(account){
 	try{
 	flightSuretyApp.methods.registerOracle.send({ from: account, value: fees, gas:3000000}); //when i use await here it causes problems and stops excution 
 	//i reviewed that with mentors and friends on slack and no one is able to figure out the problem .. the contract function run perfectly the problem is in the serer
-	let result = await flightSuretyApp.methods.getMyIndexes().call({from: account});
-	console.log("Oracle Registered:" +result[0]+"-"+result[1]+"-"+result[2]);
-	oracles.push([account, result]);
 	//console.log("New Oracle array Count = "+oracles.length);
 	}catch(e)
   {
@@ -47,7 +47,11 @@ async function registerOneOracle(account){
 	}
 }
 	
-// }
+async function print(account){
+	let result = await flightSuretyApp.methods.getMyIndexes().call({from: account});
+	console.log("Oracle Registered:" +result[0]+"-"+result[1]+"-"+result[2]);
+	oracles.push([account, result]);
+}
 function submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode, OracleAddress) {
   try{
     flightSuretyApp.methods.submitOracleResponse(index, airline, flight, timestamp, FlightStatusCode).send({

@@ -206,6 +206,62 @@ contract('Flight Surety Tests', async (accounts) => {
     let result5 = await config.flightSuretyData.isRegistred.call(airline5);
     assert.equal(result5, true, "Airline5 not registered");
   });
+  it(`can register flight`, async function () {
+
+    // ARRANGE
+    
+    let name = "ND44";
+    let from = "Tokyo"
+    let to = "London"
+    let airlineAddress = accounts[2] //registered before
+    let statusCode = 0;
+    let timestamp = Math.floor(Date.now() / 1000);
+
+   // ACT
+   try {
+       var flightk = await config.flightSuretyData.registerFlight(name, from, to, airlineAddress, statusCode, timestamp, {from: airlineAddress });
+
+   }
+   catch(e) {
+       console.log("error in registering flight",e);
+   }
+   var flightKey = await config.flightSuretyData.getFlight.call(name,{from: airlineAddress });
+   //console.log("flightKey"+flightKey);
+   let result = await config.flightSuretyData.isFlightRegistred.call(flightKey);
+   //console.log("result"+result);
+   // ASSERT
+   assert.equal(result, true, "flight not registered");
+
+  });
+//   it(`(passengers 2) Passengers may pay up to 1 ether for purchasing flight insurance.`, async function () {
+
+//     // ARRANGE
+    
+//     let amountPaid = web3.utils.toWei("0.8","ether");
+//     let buyer = accounts[6];
+//     let PassengerName = "sara";
+//     let airline = accounts[3]; //registered before
+//     let key = await config.flightSuretyData.getFlight.call('ND44',{from: airline});
+//     let balanceBefore = await web3.eth.getBalance(airline);
+//     console.log("balanceBefore:"+balanceBefore);
+//    // ACT
+//    try {
+//        await config.flightSuretyData.buy( key,buyer,PassengerName,airline, {from: buyer, value: amountPaid });
+//    }
+//    catch(e) {
+//        console.log("error in buying",e);
+//    }
+   
+//    let balanceAfter = await web3.eth.getBalance(airline);
+//     console.log("balanceAfter:"+balanceAfter);
+//     var result;
+//     if (balanceAfter>balanceBefore) result=true;
+//     else result=false;
+
+//    // ASSERT
+//    assert.equal(result, true, "not able to buy");
+
+//  });
 
 
 

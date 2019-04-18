@@ -199,6 +199,10 @@ contract FlightSuretyData {
         return airlines[airline].registerd;
 
     }
+    function isFlightRegistred(bytes32 flightkey) external returns(bool) {
+        return flights[flightkey].isRegistered;
+
+    }
     function authorizedContract(address dataContract) external requireContractOwner {
       authorizedContracts[dataContract] = 1;
     }
@@ -280,7 +284,6 @@ contract FlightSuretyData {
     function buy
                             (
                                 bytes32 flightkey,
-                                uint amountPaid,
                                 address buyer,
                                 string PassengerName,
                                 address airline
@@ -290,7 +293,8 @@ contract FlightSuretyData {
                             requireIsOperational
                             flightRegistered(flightkey)
     {
-        require(amountPaid<=0 ether, "you need to pay more than 0 ether or less than 1 ether");
+        uint amountPaid = msg.value;
+        require(amountPaid <= 0 ether, "you need to pay more than 0 ether or less than 1 ether");
         require(amountPaid>1 ether, "you can pay up to 1 ether only");
         uint count = flights[flightkey].passengersFunds.length;
         Passenger memory newPassenger = Passenger(amountPaid,PassengerName,count,0);

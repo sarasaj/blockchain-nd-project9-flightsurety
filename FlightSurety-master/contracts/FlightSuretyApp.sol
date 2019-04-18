@@ -167,22 +167,22 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */
-    function registerFlight
-                                (
-                                	string name,
-                                	string from,
-                                	string to,
-                                	address airlineAddress,
-                                	uint8 statusCode,
-                                	uint256 timestamp
+    // function registerFlight
+    //                             (
+    //                             	string name,
+    //                             	string from,
+    //                             	string to,
+    //                             	address airlineAddress,
+    //                             	uint8 statusCode,
+    //                             	uint256 timestamp
 
-                                )
-                                external
-                                airlineHasFunded(airlineAddress)
-    {
-    	flightSuretyData.registerFlight(name,from,to,airlineAddress,statusCode,timestamp);
+    //                             )
+    //                             external
+    //                             airlineHasFunded(airlineAddress)
+    // {
+    // 	flightSuretyData.registerFlight(name,from,to,airlineAddress,statusCode,timestamp);
 
-    }
+    // }
 
     function buyInsurance(bytes32 flightkey,string Passengername,address airline) requireIsOperational payable external {
     	flightSuretyData.buy(flightkey, msg.value , msg.sender,Passengername,airline);
@@ -202,7 +202,7 @@ contract FlightSuretyApp {
                                 internal
     {
         if(statusCode == STATUS_CODE_LATE_AIRLINE){
-            bytes32 flightKey = getFlightKey (airline, flight,timestamp);
+            bytes32 flightKey = getFlightKey(airline, flight,timestamp);
             flightSuretyData.creditInsurees(flightKey);
         }
     }
