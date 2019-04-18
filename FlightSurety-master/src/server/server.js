@@ -29,7 +29,7 @@ fees = await flightSuretyApp.methods.REGISTRATION_FEE.call({from: accounts[0]});
 let limit = ORACLES_COUNT+5;
 	for (let i = 5; i < limit ; i++) {
 		console.log("account:"+accounts[i]+"		i:"+i);
-		registerOneOracle(accounts[i]);
+		await registerOneOracle(accounts[i]);
 	}
 	
 }

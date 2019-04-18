@@ -1,0 +1,18 @@
+i'm submitting this project in hopes it'll pass .. i'm very depressed i spent a month in a loop of non-stop non logical errors .. some errors i asked my mentors to debug with me and they couldn't figure out the bug although the logic is correct .. so i hope you might have an idea 
+i did everything as the rubric state 
+to help you review this project against the rubric:
+1. please read the read.me file.
+2.for the 1st criteria (Separation of Concerns, Operational Control and “Fail Fast”)
+it easy just looking at the contracts code & typing npm run dapp to view it .
+3. (airlines) everything is in the flightSurety test file .. type truffle test ./test/flightSurety.js
+4.(passengers) view the contract , dapp (index.html/index.js/contract.js)
+5.(oracles) in test file & server.js file .. type `npm run server`&`truffle test ./test/oracles.js`
+
+------------------------------------------------
+
+to help you run this project against the rubric please do the following:
+1. read the read.me file careully.
+2. run each test separtely as stated here https://medium.com/@andresaaap/flightsurety-project-faq-udacity-blockchain-b4bd4fb03320 
+else it'll fail 
+`truffle test ./test/flightSurety.js`
+`truffle test ./test/oracles.js`
