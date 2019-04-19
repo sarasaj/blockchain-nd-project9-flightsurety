@@ -131,9 +131,10 @@ contract FlightSuretyData {
         _;
         require(guard == counter ,"that is not allowed");
     }
-    modifier flightRegistered(bytes32 flightkey)
+    modifier flightRegistered(string flight)
     {
-        require(flights[flightkey].isRegistered, "flight is not registered");
+        bytes32 flightKey = flightsKeys[flight];
+        require(flights[flightKey].isRegistered, "flight is not registered");
         _;
     }
     modifier airlineHasFunded(address airline)
@@ -212,7 +213,7 @@ contract FlightSuretyData {
     function hasFunded(address airline) external returns(bool){
       return airlines[airline].hasFunded;
     }
-    function getFlight(string name) external returns(bytes32){
+    function getFlight(string name) internal returns(bytes32){
         return flightsKeys[name];
     }
 
@@ -239,7 +240,8 @@ contract FlightSuretyData {
         Airline storage newAirline = airlines[newAirlineAddress];
         newAirline.airlineAddress = newAirlineAddress;
         newAirline.name = name;
-        newAirline.registerd = true;
+        newAirline.
+        registerd = true;
 
         noOfAirlines++;
 
@@ -283,7 +285,7 @@ contract FlightSuretyData {
     */
     function buy
                             (
-                                bytes32 flightkey,
+                                string flight,
                                 address buyer,
                                 string PassengerName,
                                 address airline
@@ -291,15 +293,18 @@ contract FlightSuretyData {
                             external
                             payable
                             requireIsOperational
-                            flightRegistered(flightkey)
+                            //flightRegistered(flight)
     {
+        bytes32 flightKey = flightsKeys[flight];
         uint amountPaid = msg.value;
-        require(amountPaid <= 0 ether, "you need to pay more than 0 ether or less than 1 ether");
-        require(amountPaid>1 ether, "you can pay up to 1 ether only");
-        uint count = flights[flightkey].passengersFunds.length;
+        //uint minValue = 0 ether;
+        uint maxValue = 1 ether;
+        //require(amountPaid <= minValue, "you need to pay more than 0 ether or less than 1 ether");
+        require(msg.value > maxValue, "you can pay up to 1 ether only");
+        uint count = flights[flightKey].passengersFunds.length;
         Passenger memory newPassenger = Passenger(amountPaid,PassengerName,count,0);
-        flights[flightkey].passengersFunds.push(msg.sender);
-        flights[flightkey].passengers[buyer] = newPassenger;
+        flights[flightKey].passengersFunds.push(msg.sender);
+        flights[flightKey].passengers[buyer] = newPassenger;
         airline.transfer(amountPaid);
     }
 
@@ -312,7 +317,7 @@ contract FlightSuretyData {
                                 )
                                 external
                                 requireIsOperational
-                                flightRegistered(flightkey)
+                                //flightRegistered(flightkey)
     {
         address[] storage arrayRef = flights[flightkey].passengersFunds;
         address passengerAddress;

@@ -17,4 +17,4 @@ else it'll fail
 `truffle test ./test/flightSurety.js` (all airlines criteria requirments)
 `truffle test ./test/oracles.js` (some oracles criteria requirments)
 3. make sure that you are runing om 8545 port in ganache - creating 30-40 accounts - changed the mnemonic in truffle.js.
-
+4. change the firstAirline in /migrations/2_deploy_contracts to the 2nd account or account[1]
